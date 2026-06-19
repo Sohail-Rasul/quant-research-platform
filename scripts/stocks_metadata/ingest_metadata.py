@@ -22,13 +22,14 @@ stock=yf.Ticker(ticker)
 
 info = stock.info
 company_name = info.get("longName")
+shares_outstanding = info.get("sharesOutstanding")
 
 print(company_name)
 
 #SQL Statement
 cur.execute(
-    "INSERT INTO stocks(ticker,company_name) VALUES (%s,%s);",
-    (ticker,company_name)
+    "INSERT INTO stocks(ticker,company_name,shares__outstanding) VALUES (%s,%s,%s);",
+    (ticker,company_name,shares_outstanding)
 )
 
 #Commit and Close

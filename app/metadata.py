@@ -5,6 +5,7 @@ def insert_stock_metadata(conn,ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
     company_name = info.get("longName")
+    shares_outstanding = info.get("sharesOutstanding")
 
     #Check if metadata is valid
     if company_name is None:
@@ -13,8 +14,8 @@ def insert_stock_metadata(conn,ticker):
 
     #Load Data into Table
     cur.execute(
-        "INSERT INTO stocks (ticker,company_name) VALUES (%s, %s) ON CONFLICT (ticker) DO NOTHING;",
-        (ticker,company_name)
+        "INSERT INTO stocks (ticker,company_name,shares_outstanding) VALUES (%s, %s,%s) ON CONFLICT (ticker) DO UPDATE SET shares_outstanding = EXCLUDED.shares_outstanding, company_name = EXCLUDED.company_name;",
+        (ticker,company_name,shares_outstanding)
     )
 
     cur.close()
