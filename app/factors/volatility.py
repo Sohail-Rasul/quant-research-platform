@@ -25,7 +25,6 @@ def compute_volatility(conn,lookback_days,as_of_date = None):
         
         volatility_data AS (
             SELECT 
-                stock_id,
                 ticker,
                 date,
                 STDDEV_SAMP(daily_return) OVER (
