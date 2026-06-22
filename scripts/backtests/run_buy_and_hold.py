@@ -2,6 +2,8 @@ from app.data.loaders import load_prices
 from app.strategies.buy_and_hold import BuyAndHoldStrategy
 from app.backtesting.backtest_engine import BacktestEngine
 
+from app.analytics.reports import generate_results
+
 tickers = [
     "RELIANCE.NS",
     "TCS.NS",
@@ -33,3 +35,23 @@ print(results.tail())
 print(f"Leftover Cash: {engine.portfolio.cash}")
 print(f"Portfolio Positions: {engine.portfolio.positions}")
 
+
+#ANALYTICS
+metrics = generate_results(results)
+print(f"==========================")
+print(f"        ANALYTICS        ")
+print(f"==========================")
+#Total Return
+print(f"Total Return: {metrics['total_return']:.2%}")
+
+#CAGR
+print(f"CAGR: {metrics['cagr']:.2%}")
+
+#Volatility
+print(f"Annualized Volatility: {metrics['volatility']:.2%}")
+
+#Sharpe Ratio
+print(f"Sharpe Ratio: {metrics['sharpe']:.2f}")
+
+#Max Drawdown
+print(f"Max Drawdown: {metrics['max_drawdown']:.2%}")
