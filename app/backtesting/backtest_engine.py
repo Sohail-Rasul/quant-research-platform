@@ -3,10 +3,11 @@ from app.backtesting.position import Position
 import pandas as pd
 
 class BacktestEngine:
-    def __init__(self,strategy,prices_df,initial_capital:float):
+    def __init__(self,strategy,prices_df,initial_capital:float,transaction_cost:float = 0.0):
         self.strategy = strategy
         self.prices_df = prices_df
         self.portfolio = Portfolio(initial_capital)
+        self.transaction_cost = transaction_cost
 
         self._prepare_price_data()
 
@@ -18,17 +19,22 @@ class BacktestEngine:
 
         for ticker,weight in weights.items():
             allocation = portfolio_value * weight
+            effective_budget = (allocation /(1 + self.transaction_cost))
+
             price = current_prices[ticker]
 
-            shares = int(allocation/price)
+            shares = int(effective_budget/price)
 
             if shares>0:
                 position = Position(ticker = ticker,shares = shares)
                 self.portfolio.add_position(position)
 
-                cash_used = shares * price
+                trade_value = shares*price
+                trade_cost = trade_value*self.transaction_cost
 
-                self.portfolio.cash -= cash_used
+                total_cost = trade_cost + trade_value
+
+                self.portfolio.cash -= total_cost
 
     #To conver price dataframe to dictionary for faster lookups
     def _prepare_price_data(self):

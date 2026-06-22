@@ -1,6 +1,7 @@
 from app.data.loaders import load_prices
 from app.strategies.buy_and_hold import BuyAndHoldStrategy
 from app.backtesting.backtest_engine import BacktestEngine
+from app.visualization.plots import (plot_equity_curve,plot_drawdown)
 
 from app.analytics.reports import generate_results
 
@@ -21,7 +22,8 @@ strategy = BuyAndHoldStrategy(tickers)
 engine = BacktestEngine(
     strategy=strategy,
     prices_df=prices,
-    initial_capital=1_000_000
+    initial_capital=1_000_000,
+    transaction_cost=0.0001
 )
 
 results = engine.run()
@@ -55,3 +57,7 @@ print(f"Sharpe Ratio: {metrics['sharpe']:.2f}")
 
 #Max Drawdown
 print(f"Max Drawdown: {metrics['max_drawdown']:.2%}")
+
+plot_equity_curve(results)
+
+plot_drawdown(results)
