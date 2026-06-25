@@ -1,5 +1,4 @@
 from app.backtesting.portfolio import Portfolio
-from app.backtesting.position import Position
 import pandas as pd
 
 class BacktestEngine:
@@ -11,6 +10,26 @@ class BacktestEngine:
 
         self._prepare_price_data()
 
+    def _buy(self,ticker:str, shares: int, price: float):
+        trade_value = shares*price
+        trade_cost = (trade_value*self.transaction_cost)
+
+        total_cost = trade_value + trade_cost
+
+        self.portfolio.cash -= total_cost
+        self.portfolio.buy(ticker,shares)
+
+    def _sell(self,ticker:str, shares:int, price: float):
+        trade_value = shares*price
+        trade_cost = trade_value*self.transaction_cost
+
+        total_gain = trade_value - trade_cost
+
+        self.portfolio.cash += total_gain
+        self.portfolio.sell(ticker,shares)
+
+
+
     def _initialize_portfolio(self,current_prices: dict[str,float]):
 
         weights = self.strategy.generate_weights()
@@ -18,6 +37,7 @@ class BacktestEngine:
         portfolio_value = self.portfolio.cash
 
         for ticker,weight in weights.items():
+
             allocation = portfolio_value * weight
             effective_budget = (allocation /(1 + self.transaction_cost))
 
@@ -26,17 +46,9 @@ class BacktestEngine:
             shares = int(effective_budget/price)
 
             if shares>0:
-                position = Position(ticker = ticker,shares = shares)
-                self.portfolio.add_position(position)
+                self._buy(ticker,shares,price)
 
-                trade_value = shares*price
-                trade_cost = trade_value*self.transaction_cost
-
-                total_cost = trade_cost + trade_value
-
-                self.portfolio.cash -= total_cost
-
-    #To conver price dataframe to dictionary for faster lookups
+    #To convert price dataframe to dictionary for faster lookups
     def _prepare_price_data(self):
         price_data = {}
 
@@ -52,6 +64,49 @@ class BacktestEngine:
 
         self.price_data = price_data
 
+    def _rebalance(self,current_prices: dict[str,float]):
+        #Generate new weights
+        weights = self.strategy.generate_weights()
+        
+        #Current Portfolio Value
+        portfolio_value = (self.portfolio.total_value(current_prices))
+
+        #Shares Being completely sold
+        for ticker in list(self.portfolio.positions):
+            if ticker not in weights:
+                shares = (self.portfolio.positions[ticker].shares)
+
+                price = current_prices[ticker]
+
+                self._sell(ticker,shares,price)
+        
+        
+        for ticker,weight in weights.items():
+            #Target Shares
+            target_value = portfolio_value * weight
+            effective_target = (target_value /(1 + self.transaction_cost))
+
+            price = current_prices[ticker]
+            target_shares = int(effective_target / price)
+
+            #Current Shares
+            if ticker in self.portfolio.positions:
+                current_shares = self.portfolio.positions[ticker].shares
+            else:
+                current_shares =0
+            
+            #Share Difference
+            share_difference = target_shares - current_shares
+
+            #Buy OR Sell 
+            if share_difference < 0:
+                self._sell(ticker,abs(share_difference),price)
+            elif share_difference >0:
+                self._buy(ticker,share_difference,price)
+        
+        
+
+
 
     def run(self):
 
@@ -60,6 +115,7 @@ class BacktestEngine:
             raise ValueError("No price data available")
 
         first_date = dates[0]
+        previous_month = (first_date.year, first_date.month)
 
         self._initialize_portfolio(
             self.price_data[first_date]
@@ -69,8 +125,14 @@ class BacktestEngine:
 
         for date in dates:
 
+            current_month = (date.year,date.month)
             current_prices = self.price_data[date]
 
+            #Run Rebalance
+            if current_month != previous_month:
+                self._rebalance(current_prices)
+                previous_month = current_month
+            
             portfolio_value = (
                 self.portfolio.total_value(
                     current_prices
