@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-from app.factors.momentum import compute_momentum
+from app.indicators.momentum import compute_momentum
 
 #Create Connection and Cursor
 conn = psycopg.connect(

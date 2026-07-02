@@ -1,8 +1,8 @@
-from app.factors.momentum import compute_momentum
-from app.factors.size import compute_size
-from app.factors.volatility import compute_volatility
-from app.factors.zscore import compute_zscore
-from app.factors.composite_score import compute_composite_score
+from app.indicators.momentum import compute_momentum
+from app.indicators.size import compute_size
+from app.indicators.volatility import compute_volatility
+from app.indicators.zscore import compute_zscore
+from app.indicators.composite_score import compute_composite_score
 
 import psycopg
 

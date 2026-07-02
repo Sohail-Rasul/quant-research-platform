@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class Strategy(ABC):
+class BaseUniverse(ABC):
 
     @abstractmethod
-    def generate_weights(self,state):
+    def get_tickers(self) -> list[str]:
         pass

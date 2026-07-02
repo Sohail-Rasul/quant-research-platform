@@ -1,32 +1,51 @@
 from app.data.loaders import load_prices
-from app.strategies.buy_and_hold import BuyAndHoldStrategy
 from app.backtesting.backtest_engine import BacktestEngine
-from app.visualization.plots import (plot_equity_curve,plot_drawdown)
-from app.universe.user_universe import UserUniverse
-from app.weighting.equal_weight import EqualWeight
 
+from app.visualization.plots import (plot_drawdown,plot_equity_curve)
 from app.analytics.reports import generate_results
 
+from app.universe.user_universe import UserUniverse
+from app.indicators.momentum_indicator import MomentumIndicator
+from app.filters.no_filter import NoFilter
+from app.ranking.no_ranker import NoRanker
+from app.weighting.equal_weight import EqualWeight
+
+from app.strategies.pipeline_strategy import PipelineStrategy
+
+#LOAD TICKERS
 tickers = [
     "RELIANCE.NS",
     "TCS.NS",
     "INFY.NS"
 ]
 
+#LOAD PRICES
 prices = load_prices(
-    tickers=["RELIANCE.NS", "TCS.NS", "INFY.NS"],
+    tickers=tickers,
     start_date="2020-01-01",
     end_date="2024-01-01"
 )
 
-#LOAD UNIVERSE
+#CREATE STRATEGY PIPELINE
 universe = UserUniverse(tickers)
 
-#GENERATE WEIGHT
+indicators = [MomentumIndicator(63)] #LIST
+
+filters = [NoFilter()] #LIST
+
+ranker = NoRanker()
+
 weighting = EqualWeight()
 
-strategy = BuyAndHoldStrategy(universe=universe, weighting=weighting)
+strategy = PipelineStrategy(
+    universe=universe,
+    indicators=indicators,
+    filters=filters,
+    ranker=ranker,
+    weighting=weighting
+)
 
+#RUN BACKTESTING ENGINE
 engine = BacktestEngine(
     strategy=strategy,
     prices_df=prices,
@@ -35,6 +54,7 @@ engine = BacktestEngine(
 )
 
 results = engine.run()
+
 results["returns"] = (
     results["portfolio_value"].pct_change()
 )

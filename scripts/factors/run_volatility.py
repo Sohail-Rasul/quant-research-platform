@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-from app.factors.volatility import compute_volatility
+from app.indicators.volatility import compute_volatility
 
 #Create Connection and Cursor
 conn = psycopg.connect(

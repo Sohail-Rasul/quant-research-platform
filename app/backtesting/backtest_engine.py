@@ -1,4 +1,5 @@
 from app.backtesting.portfolio import Portfolio
+from app.strategies.strategy_state import StrategyState
 import pandas as pd
 
 class BacktestEngine:
@@ -28,11 +29,17 @@ class BacktestEngine:
         self.portfolio.cash += total_gain
         self.portfolio.sell(ticker,shares)
 
+    #HELPER FUNCTION: To Return Historical Data up to a certain date
+    def _get_historical_data(self,current_date):
+        return self.price_matrix.loc[:current_date]
 
 
-    def _initialize_portfolio(self,current_prices: dict[str,float]):
+    def _initialize_portfolio(self,date,current_prices: dict[str,float]):
 
-        weights = self.strategy.generate_weights()
+        historical_data = self._get_historical_data(date)
+        state = StrategyState(date=date, historical_data=historical_data, tickers = [], selected_tickers=[])
+
+        weights = self.strategy.generate_weights(state)
 
         portfolio_value = self.portfolio.cash
 
@@ -47,6 +54,7 @@ class BacktestEngine:
 
             if shares>0:
                 self._buy(ticker,shares,price)
+
 
     #To convert price dataframe to dictionary for faster lookups
     def _prepare_price_data(self):
@@ -64,9 +72,24 @@ class BacktestEngine:
 
         self.price_data = price_data
 
-    def _rebalance(self,current_prices: dict[str,float]):
+        self.price_matrix = (self.prices_df.pivot(
+            index = "date",
+            columns = "ticker",
+            values = "adj_close"
+        ))
+
+
+    def _rebalance(self,date,current_prices: dict[str,float]):
+        historical_data = self._get_historical_data(date)
+        state = StrategyState(
+            date=date,
+            historical_data=historical_data,
+            tickers=[],
+            selected_tickers=[]
+        )
+
         #Generate new weights
-        weights = self.strategy.generate_weights()
+        weights = self.strategy.generate_weights(state)
         
         #Current Portfolio Value
         portfolio_value = (self.portfolio.total_value(current_prices))
@@ -114,23 +137,23 @@ class BacktestEngine:
         if not dates:
             raise ValueError("No price data available")
 
-        first_date = dates[0]
+        first_date = dates[64] #TEMPORARY!!! FIX THIS
         previous_month = (first_date.year, first_date.month)
 
-        self._initialize_portfolio(
+        self._initialize_portfolio(first_date,
             self.price_data[first_date]
         )
 
         equity_curve = []
 
-        for date in dates:
+        for date in dates[64:]: # TEMPORARY!!! FIX THIS
 
             current_month = (date.year,date.month)
             current_prices = self.price_data[date]
 
             #Run Rebalance
             if current_month != previous_month:
-                self._rebalance(current_prices)
+                self._rebalance(date,current_prices)
                 previous_month = current_month
             
             portfolio_value = (

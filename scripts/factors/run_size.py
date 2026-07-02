@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-from app.factors.size import compute_size
+from app.indicators.size import compute_size
 
 #Create Connection and Cursor
 conn = psycopg.connect(

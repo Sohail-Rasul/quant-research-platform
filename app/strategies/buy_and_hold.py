@@ -1,23 +1,21 @@
 from app.strategies.base_strategy import Strategy
+from app.universe.base_universe import BaseUniverse
+from app.weighting.base_weighting import BaseWeighting
+from app.strategies.strategy_state import StrategyState
 
 class BuyAndHoldStrategy(Strategy):
-    def __init__(self,tickers: list[str]):
-        super().__init__()
+    def __init__(self,universe:BaseUniverse,weighting : BaseWeighting):
+            super().__init__()
 
-        self.tickers = tickers
+            if not universe.get_tickers():
+                raise ValueError("Universe cannot be empty.")
 
-        if not tickers:
-            raise ValueError(
-                "At least one ticker must be provided."
-            )
+            self.universe = universe
+            self.weighting = weighting
 
-    def generate_weights(self):
-        ticker_weights={}
+            
+
+    def generate_weights(self, state: StrategyState):
+        tickers = self.universe.get_tickers()
         
-        num_of_stocks = len(self.tickers)
-        weight = 1/num_of_stocks
-
-        for ticker in self.tickers:
-            ticker_weights[ticker] = weight
-
-        return ticker_weights
+        return self.weighting.generate_weights(tickers)
