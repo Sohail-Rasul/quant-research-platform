@@ -21,3 +21,7 @@ class MomentumIndicator(BaseIndicator):
         momentum = (today_price / past_price) -1
 
         return momentum
+    
+    @property
+    def warmup_period(self):
+        return self.lookback_days + 1

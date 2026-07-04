@@ -136,8 +136,17 @@ class BacktestEngine:
         dates = sorted(self.price_data.keys())
         if not dates:
             raise ValueError("No price data available")
+        
+        warmup = max(indicator.warmup_period for indicator in self.strategy.indicators)
 
-        first_date = dates[64] #TEMPORARY!!! FIX THIS
+        if len(dates) < warmup:
+            raise ValueError(
+                f"Not enough historical data. "
+                f"Need at least {warmup} rows, "
+                f"but only {len(dates)} are available."
+            )
+
+        first_date = dates[warmup] 
         previous_month = (first_date.year, first_date.month)
 
         self._initialize_portfolio(first_date,
@@ -146,7 +155,7 @@ class BacktestEngine:
 
         equity_curve = []
 
-        for date in dates[64:]: # TEMPORARY!!! FIX THIS
+        for date in dates[warmup-1:]:
 
             current_month = (date.year,date.month)
             current_prices = self.price_data[date]

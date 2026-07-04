@@ -14,3 +14,7 @@ class BaseIndicator(ABC):
     @abstractmethod
     def calculate(self,state):
         pass
+
+    @property
+    def warmup_period(self) -> int:
+        pass
