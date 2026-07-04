@@ -42,6 +42,3 @@ class PipelineStrategy(Strategy):
 
         return self.weighting.generate_weights(state)
 
-
-
-        return {}

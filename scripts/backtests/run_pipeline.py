@@ -5,9 +5,15 @@ from app.visualization.plots import (plot_drawdown,plot_equity_curve)
 from app.analytics.reports import generate_results
 
 from app.universe.user_universe import UserUniverse
+
 from app.indicators.momentum_indicator import MomentumIndicator
+
 from app.filters.no_filter import NoFilter
+from app.filters.threshold_filter import ThresholdFilter
+
 from app.ranking.no_ranker import NoRanker
+from app.ranking.topNranker import TopNRanker
+
 from app.weighting.equal_weight import EqualWeight
 
 from app.strategies.pipeline_strategy import PipelineStrategy
@@ -31,9 +37,9 @@ universe = UserUniverse(tickers)
 
 indicators = [MomentumIndicator(63)] #LIST
 
-filters = [NoFilter()] #LIST
+filters = [ThresholdFilter(indicator="momentum",threshold=0.20,operator=">")] #LIST
 
-ranker = NoRanker()
+ranker = TopNRanker(indicator="momentum",n=2)
 
 weighting = EqualWeight()
 

@@ -155,7 +155,7 @@ class BacktestEngine:
 
         equity_curve = []
 
-        for date in dates[warmup-1:]:
+        for date in dates[warmup:]:
 
             current_month = (date.year,date.month)
             current_prices = self.price_data[date]
