@@ -7,6 +7,7 @@ from app.analytics.reports import generate_results
 from app.universe.user_universe import UserUniverse
 
 from app.indicators.momentum_indicator import MomentumIndicator
+from app.indicators.volatility_indicator import VolatilityIndicator
 
 from app.filters.no_filter import NoFilter
 from app.filters.threshold_filter import ThresholdFilter
@@ -35,11 +36,11 @@ prices = load_prices(
 #CREATE STRATEGY PIPELINE
 universe = UserUniverse(tickers)
 
-indicators = [MomentumIndicator(63)] #LIST
+indicators = [VolatilityIndicator(63)] #LIST
 
-filters = [ThresholdFilter(indicator="momentum",threshold=0.20,operator=">")] #LIST
+filters = [ThresholdFilter(indicator="volatility",threshold=0.20,operator="<")] #LIST
 
-ranker = TopNRanker(indicator="momentum",n=2)
+ranker = TopNRanker(indicator="volatility",n=2,ascending=True)
 
 weighting = EqualWeight()
 

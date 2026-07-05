@@ -21,6 +21,7 @@ class VolatilityIndicator(BaseIndicator):
 
         #Get required historical data
         historical_data = state.historical_data.iloc[-(self.lookback_days+1):]
+        historical_data = historical_data.astype(float)
 
         #daily returns
         daily_returns = historical_data.pct_change()
