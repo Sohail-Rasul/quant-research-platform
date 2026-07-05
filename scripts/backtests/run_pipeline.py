@@ -16,6 +16,7 @@ from app.ranking.no_ranker import NoRanker
 from app.ranking.topNranker import TopNRanker
 
 from app.weighting.equal_weight import EqualWeight
+from app.weighting.inverse_volatility_weight import InverseVolatilityWeight
 
 from app.strategies.pipeline_strategy import PipelineStrategy
 
@@ -38,11 +39,11 @@ universe = UserUniverse(tickers)
 
 indicators = [VolatilityIndicator(63)] #LIST
 
-filters = [ThresholdFilter(indicator="volatility",threshold=0.20,operator="<")] #LIST
+filters = [NoFilter()] #LIST
 
-ranker = TopNRanker(indicator="volatility",n=2,ascending=True)
+ranker = TopNRanker(indicator="volatility",n=3,ascending=True)
 
-weighting = EqualWeight()
+weighting = InverseVolatilityWeight(indicator = "volatility")
 
 strategy = PipelineStrategy(
     universe=universe,
