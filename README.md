@@ -1,213 +1,144 @@
-# ABOUT THE PROJECT
+# Quantitative Research Platform
 
-The Quantitative Research Platform is an end-to-end system for acquiring, storing, and maintaining market data for quantitative research. It uses Python ETL pipelines to ingest stock metadata and historical price data from Yahoo Finance into a PostgreSQL market data warehouse, supporting both one-time historical backfills and efficient incremental updates.
+> **README (Through Module 4)**
 
-The broader goal of the project is to learn quantitative finance, backend engineering, data engineering, and system design by progressively building a complete research platform from first principles.
+## Project Overview
 
-# Tech Stack
+The Quantitative Research Platform is a modular framework for
+researching, constructing, and backtesting quantitative equity
+strategies on Indian equities.
 
-- Python
-- PostgreSQL
-- psycopg
-- yfinance
-- python-dotenv
-- Git
+### Goals
 
-# Current Status (M1 Complete)
+-   Learn quantitative finance through implementation.
+-   Build a reusable research framework.
+-   Apply software engineering principles.
+-   Demonstrate data engineering, system design, and analytics skills.
 
-The platform currently supports:
+------------------------------------------------------------------------
 
-* Stock metadata ingestion
-* Historical price backfills
-* Incremental price updates
-* Idempotent ETL pipelines
-* PostgreSQL-based storage
-* Data validation and quality checks
+## Module Progress
 
-Future modules will extend the system with factor research, backtesting, portfolio analytics, experiment tracking, APIs, and deployment capabilities.
+### M1 -- Data Platform
 
-# Setup
+-   Universe ingestion
+-   Historical data storage
+-   PostgreSQL integration
+-   Incremental updates
 
-## 1. Clone the Repository
+### M2 -- Factor Research
 
-```bash
-git clone <repository-url>
-cd quant-research-platform
+-   Momentum
+-   Volatility
+-   Size
+-   Z-score normalization
+-   Composite factor research
+
+### M3 -- Backtesting Engine
+
+-   Portfolio management
+-   Buy/Sell execution
+-   Transaction costs
+-   Monthly rebalancing
+-   Performance analytics
+
+### M4 -- Modular Strategy Framework
+
+Pipeline:
+
+Universe → Indicators → Factor Model → Filters → Ranker → Weighting →
+Backtesting → Analytics
+
+------------------------------------------------------------------------
+
+## Features
+
+### Indicators
+
+-   Momentum
+-   Volatility
+-   Size (framework support)
+
+### Factor Models
+
+-   Composite Factor Model
+-   Cross-sectional Z-score normalization
+
+### Filters
+
+-   Threshold Filter
+-   NoFilter
+
+### Ranking
+
+-   Top-N Ranker
+
+### Weighting
+
+-   Equal Weight
+-   Inverse Volatility
+
+### Analytics
+
+-   Total Return
+-   CAGR
+-   Annualized Volatility
+-   Sharpe Ratio
+-   Maximum Drawdown
+
+------------------------------------------------------------------------
+
+## Architecture
+
+``` text
+Universe
+    ↓
+Indicators
+    ↓
+Factor Model
+    ↓
+Filters
+    ↓
+Ranking
+    ↓
+Weighting
+    ↓
+Backtesting
+    ↓
+Analytics
 ```
 
-## 2. Create and Activate a Virtual Environment
+Each stage performs one responsibility, allowing components to be
+replaced independently.
 
-### Windows
+------------------------------------------------------------------------
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
+## Technology Stack
 
-### macOS / Linux
+-   Python
+-   PostgreSQL
+-   Pandas
+-   NumPy
+-   Matplotlib
+-   yfinance
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
+------------------------------------------------------------------------
 
-## 3. Install Dependencies
+## Current Status
 
-```bash
-pip install -r requirements.txt
-```
+Completed: - M1 - M2 - M3 - M4 (Core)
 
-## 4. Create the PostgreSQL Database
+Next: - M5 Portfolio Optimization & Risk Models
 
-Create a PostgreSQL database named:
+------------------------------------------------------------------------
 
-```text
-quant_research_platform
-```
+## Purpose
 
-Example local configuration:
+The project serves as both a learning platform and a portfolio project
+demonstrating:
 
-```text
-Host: localhost
-Port: 5432
-Database: quant_research_platform
-User: postgres
-```
-
-## 5. Configure Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=quant_research_platform
-DB_USER=postgres
-DB_PASSWORD=your_password_here
-```
-
-## 6. Create the Database Schema
-
-Run the SQL migration file to create the required tables.
-
-This migration creates:
-
-* `stocks`
-* `prices`
-
-# Repository Structure
-
-```text
-quant-research-platform/
-│
-├── app/          # Reusable application logic
-├── scripts/      # Executable ETL workflows
-├── notebooks/    # Research and exploration
-├── tests/        # Testing and validation
-├── docs/         # Documentation
-│
-├── requirements.txt
-├── .env
-└── README.md
-```
-
-Folder Responsibilities:
-
-* `app/` contains reusable code shared across the project.
-* `scripts/` contains executable workflows such as metadata ingestion, historical backfills, and incremental updates.
-* `notebooks/` are used for experimentation and exploratory analysis.
-* `tests/` contains validation and testing artifacts.
-* `docs/` stores architecture notes and supporting documentation.
-
-# Script Usage
-
-## ingest_metadata.py
-
-Purpose:
-
-Populate the `stocks` table using Yahoo Finance metadata.
-
-Usage:
-
-```bash
-python scripts/ingest_metadata.py
-```
-
----
-
-## backfill_prices.py
-
-Purpose:
-
-Perform a one-time historical backfill of daily price data.
-
-Features:
-
-* Bulk inserts
-* Idempotent loading
-* Historical initialization
-
-Usage:
-
-```bash
-python scripts/backfill_prices.py
-```
-
----
-
-## update_prices.py
-
-Purpose:
-
-Load only new price observations after the latest stored trading date.
-
-Features:
-
-* Incremental updates
-* Reuse of ETL logic
-* Safe reruns using conflict handling
-
-Usage:
-
-```bash
-python scripts/update_prices.py
-```
-
-# Database Schema
-
-## stocks
-
-Stores stock metadata.
-
-| Column       | Description                 |
-| ------------ | --------------------------- |
-| stock_id     | Primary key                 |
-| ticker       | Yahoo Finance ticker symbol |
-| company_name | Formal company name         |
-| created_at   | Record creation timestamp   |
-
----
-
-## prices
-
-Stores daily historical price observations.
-
-| Column    | Description             |
-| --------- | ----------------------- |
-| stock_id  | Foreign key to `stocks` |
-| date      | Trading date            |
-| open      | Opening price           |
-| high      | Highest price           |
-| low       | Lowest price            |
-| close     | Closing price           |
-| adj_close | Adjusted closing price  |
-| volume    | Trading volume          |
-
-Relationship:
-
-```text
-One stock
-↓
-Many price observations
-```
-
+-   Quantitative Research
+-   Software Engineering
+-   Data Engineering
+-   Financial Analytics
+-   Object-Oriented Design
