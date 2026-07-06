@@ -9,6 +9,8 @@ from app.universe.user_universe import UserUniverse
 from app.indicators.momentum_indicator import MomentumIndicator
 from app.indicators.volatility_indicator import VolatilityIndicator
 
+from app.factor_models.composite_factor_model import CompositeFactorModel
+
 from app.filters.no_filter import NoFilter
 from app.filters.threshold_filter import ThresholdFilter
 
@@ -37,11 +39,13 @@ prices = load_prices(
 #CREATE STRATEGY PIPELINE
 universe = UserUniverse(tickers)
 
-indicators = [VolatilityIndicator(63)] #LIST
+indicators = [MomentumIndicator(63),VolatilityIndicator(63)] #LIST
+
+factor_model = CompositeFactorModel(factor_weights={"momentum": 0.6, "volatility":-0.4})
 
 filters = [NoFilter()] #LIST
 
-ranker = TopNRanker(indicator="volatility",n=3,ascending=True)
+ranker = TopNRanker(indicator="composite",n=1,ascending=False)
 
 weighting = InverseVolatilityWeight(indicator = "volatility")
 
@@ -50,7 +54,8 @@ strategy = PipelineStrategy(
     indicators=indicators,
     filters=filters,
     ranker=ranker,
-    weighting=weighting
+    weighting=weighting,
+    factor_model=factor_model
 )
 
 #RUN BACKTESTING ENGINE

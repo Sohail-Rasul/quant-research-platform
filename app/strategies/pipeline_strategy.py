@@ -5,6 +5,7 @@ from app.ranking.base_ranker import BaseRanker
 from app.weighting.base_weighting import BaseWeighting
 from app.filters.base_filter import BaseFilter
 from app.strategies.strategy_state import StrategyState
+from app.factor_models.base_factor_model import BaseFactorModel
 
 class PipelineStrategy(Strategy):
     def __init__(
@@ -13,13 +14,15 @@ class PipelineStrategy(Strategy):
         indicators: list[BaseIndicator],
         ranker: BaseRanker,
         weighting: BaseWeighting,
-        filters: list[BaseFilter] | None = None
+        filters: list[BaseFilter] | None = None,
+        factor_model: BaseFactorModel | None = None
     ):
         self.universe = universe
         self.indicators = indicators
         self.ranker = ranker
         self.weighting = weighting
         self.filters = filters or []
+        self.factor_model = factor_model
 
     
     def generate_weights(self, state : StrategyState):
@@ -34,6 +37,11 @@ class PipelineStrategy(Strategy):
         #Calculating indicator result values
         for indicator in self.indicators :
             state.indicator_results[indicator.name] = indicator.calculate(state)
+
+        #Calculating Composite Factor
+        if self.factor_model is not None:
+            self.factor_model.calculate(state)
+
 
         for filter in self.filters:
             filter.apply(state)
