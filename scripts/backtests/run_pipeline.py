@@ -72,6 +72,15 @@ results["returns"] = (
     results["portfolio_value"].pct_change()
 )
 
+trades = engine.get_trade_log()
+
+print(f"=====================")
+print(f"     TRADE LOG")
+print(f"=====================")
+print(trades.head())
+print("...")
+print(trades.tail())
+
 print(results.head())
 print(results.tail())
 
@@ -84,6 +93,8 @@ metrics = generate_results(results)
 print(f"==========================")
 print(f"        ANALYTICS        ")
 print(f"==========================")
+#Trades Executed
+print(f"Total Trades Executed: {len(trades)}")
 #Total Return
 print(f"Total Return: {metrics['total_return']:.2%}")
 

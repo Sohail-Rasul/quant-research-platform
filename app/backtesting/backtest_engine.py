@@ -8,10 +8,11 @@ class BacktestEngine:
         self.prices_df = prices_df
         self.portfolio = Portfolio(initial_capital)
         self.transaction_cost = transaction_cost
+        self.trade_log = []
 
         self._prepare_price_data()
 
-    def _buy(self,ticker:str, shares: int, price: float):
+    def _buy(self,date, ticker:str, shares: int, price: float):
         trade_value = shares*price
         trade_cost = (trade_value*self.transaction_cost)
 
@@ -20,7 +21,20 @@ class BacktestEngine:
         self.portfolio.cash -= total_cost
         self.portfolio.buy(ticker,shares)
 
-    def _sell(self,ticker:str, shares:int, price: float):
+        self.trade_log.append(
+            {
+                "date": date,
+                "action": "BUY",
+                "ticker": ticker,
+                "shares": shares,
+                "price": price,
+                "trade_value": trade_value,
+                "transaction_cost": trade_cost,
+                "cash_after": self.portfolio.cash
+            }
+        )
+
+    def _sell(self,date,ticker:str, shares:int, price: float):
         trade_value = shares*price
         trade_cost = trade_value*self.transaction_cost
 
@@ -28,6 +42,19 @@ class BacktestEngine:
 
         self.portfolio.cash += total_gain
         self.portfolio.sell(ticker,shares)
+
+        self.trade_log.append(
+            {
+                "date":date,
+                "action": "SELL",
+                "ticker": ticker,
+                "shares": shares,
+                "price": price,
+                "trade_value": trade_value,
+                "transaction_cost": trade_cost,
+                "cash_after": self.portfolio.cash
+            }
+        )
 
     #HELPER FUNCTION: To Return Historical Data up to a certain date
     def _get_historical_data(self,current_date):
@@ -53,7 +80,7 @@ class BacktestEngine:
             shares = int(effective_budget/price)
 
             if shares>0:
-                self._buy(ticker,shares,price)
+                self._buy(date,ticker,shares,price)
 
 
     #To convert price dataframe to dictionary for faster lookups
@@ -101,7 +128,7 @@ class BacktestEngine:
 
                 price = current_prices[ticker]
 
-                self._sell(ticker,shares,price)
+                self._sell(date,ticker,shares,price)
         
         
         for ticker,weight in weights.items():
@@ -123,12 +150,21 @@ class BacktestEngine:
 
             #Buy OR Sell 
             if share_difference < 0:
-                self._sell(ticker,abs(share_difference),price)
+                self._sell(date,ticker,abs(share_difference),price)
             elif share_difference >0:
-                self._buy(ticker,share_difference,price)
+                self._buy(date,ticker,share_difference,price)
         
         
+    def get_trade_log(self):
 
+        trades = pd.DataFrame(self.trade_log)
+
+        return trades.round({
+            "price": 2,
+            "trade_value": 2,
+            "transaction_cost": 2,
+            "cash_after": 2
+        })
 
 
     def run(self):
