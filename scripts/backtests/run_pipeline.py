@@ -1,4 +1,4 @@
-from app.data.loaders import load_prices
+from app.data.loaders import (load_prices,load_metadata)
 from app.backtesting.backtest_engine import BacktestEngine
 
 from app.visualization.plots import (plot_drawdown,plot_equity_curve)
@@ -8,6 +8,7 @@ from app.universe.user_universe import UserUniverse
 
 from app.indicators.momentum_indicator import MomentumIndicator
 from app.indicators.volatility_indicator import VolatilityIndicator
+from app.indicators.size_indicator import SizeIndicator
 
 from app.factor_models.composite_factor_model import CompositeFactorModel
 
@@ -36,12 +37,14 @@ prices = load_prices(
     end_date="2024-01-01"
 )
 
+metadata = load_metadata(tickers= tickers)
+
 #CREATE STRATEGY PIPELINE
 universe = UserUniverse(tickers)
 
-indicators = [MomentumIndicator(63),VolatilityIndicator(63)] #LIST
+indicators = [MomentumIndicator(63),VolatilityIndicator(63),SizeIndicator()] #LIST
 
-factor_model = CompositeFactorModel(factor_weights={"momentum": 0.6, "volatility":-0.4})
+factor_model = CompositeFactorModel(factor_weights={"momentum": 0.6, "volatility":-0.2, "size":-0.2})
 
 filters = [NoFilter()] #LIST
 
@@ -62,6 +65,7 @@ strategy = PipelineStrategy(
 engine = BacktestEngine(
     strategy=strategy,
     prices_df=prices,
+    metadata_df=metadata,
     initial_capital=1_000_000,
     transaction_cost=0.0001
 )

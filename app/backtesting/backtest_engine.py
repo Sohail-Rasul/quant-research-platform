@@ -3,9 +3,10 @@ from app.strategies.strategy_state import StrategyState
 import pandas as pd
 
 class BacktestEngine:
-    def __init__(self,strategy,prices_df,initial_capital:float,transaction_cost:float = 0.0):
+    def __init__(self,strategy,prices_df,metadata_df,initial_capital:float,transaction_cost:float = 0.0):
         self.strategy = strategy
         self.prices_df = prices_df
+        self.metadata_df = metadata_df
         self.portfolio = Portfolio(initial_capital)
         self.transaction_cost = transaction_cost
         self.trade_log = []
@@ -64,7 +65,7 @@ class BacktestEngine:
     def _initialize_portfolio(self,date,current_prices: dict[str,float]):
 
         historical_data = self._get_historical_data(date)
-        state = StrategyState(date=date, historical_data=historical_data, tickers = [], selected_tickers=[])
+        state = StrategyState(date=date, historical_data=historical_data, tickers = [], selected_tickers=[], metadata=self.metadata_df,)
 
         weights = self.strategy.generate_weights(state)
 
@@ -112,7 +113,8 @@ class BacktestEngine:
             date=date,
             historical_data=historical_data,
             tickers=[],
-            selected_tickers=[]
+            selected_tickers=[],
+            metadata=self.metadata_df,
         )
 
         #Generate new weights

@@ -16,3 +16,5 @@ class StrategyState:
 
 
     indicator_results: dict = field(default_factory=dict) #default_factory=dict creates a new dictionary for every instance
+
+    metadata: pd.DataFrame | None = None

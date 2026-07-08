@@ -61,4 +61,30 @@ def load_prices(
     
     return df
 
+def load_metadata(
+    tickers: list[str]
+) -> pd.DataFrame:
 
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            ticker, shares_outstanding
+        FROM stocks
+        WHERE ticker = ANY(%s);
+        """,
+        (tickers,)
+    )
+
+    df = pd.DataFrame(
+        cur.fetchall(),
+        columns=[
+            "ticker","shares_outstanding"]
+    )
+
+    cur.close()
+
+    df.set_index("ticker", inplace=True)
+
+    return df

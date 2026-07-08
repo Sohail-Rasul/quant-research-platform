@@ -6,8 +6,8 @@ class CompositeFactorModel(BaseFactorModel):
     def __init__(self, factor_weights : dict[str,float]):
         self.factor_weights = factor_weights
 
-        if abs(sum(self.factor_weights.values()) - 1) < 1e-9:
-            raise ValueError(f"Absolute sum should be equal to 1!")
+        if not factor_weights:
+            raise ValueError("At least one factor is required.")
 
     def calculate(self, state : StrategyState):
         # Get indicator results: "momentum" : .... ; "volatility": ....

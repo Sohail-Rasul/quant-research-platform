@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-import pandas as pd
-
 
 #Input historical prices ; Output one value per stock
 class BaseIndicator(ABC):
