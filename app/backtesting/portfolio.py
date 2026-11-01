@@ -38,17 +38,16 @@ class Portfolio:
         
         for position in self.positions.values():
 
-            price = current_prices[position.ticker]
+            # FIX: current_prices[position.ticker] raised a bare KeyError if a
+            # held ticker had no price row for this exact date (data gap), which
+            # is confusing to debug. This makes the failure explicit instead.
+            price = current_prices.get(position.ticker)
+            if price is None:
+                raise ValueError(
+                    f"Missing price for held position '{position.ticker}' on this date "
+                    f"— likely a data gap in the prices table that needs to be resolved."
+                )
 
             total += (price*position.shares)
 
         return total
-    
-        
-
-            
-
-
-        
-
-

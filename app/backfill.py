@@ -1,6 +1,10 @@
+import pandas as pd
 import yfinance as yf
 
-def backfill_prices(conn,ticker):
+def backfill_prices(conn,ticker,overwrite=False):
+    # overwrite=True REPLACES existing rows (ON CONFLICT DO UPDATE). Needed because
+    # yfinance re-scales ALL past adj_close values after a split/dividend, so old
+    # rows stored earlier go stale. overwrite=False keeps the original behaviour.
     #Create Cursor
     cur = conn.cursor()
 
@@ -40,7 +44,8 @@ def backfill_prices(conn,ticker):
         volume = row["Volume"]
 
         if (
-            adj_close < 0 or
+            pd.isna(adj_close) or    # FIX: NaN used to slip through every check below
+            adj_close <= 0 or        # FIX: 0 was allowed (table CHECK needs > 0)
             volume < 0 or
             low_price > high_price or
             open_price < low_price or
@@ -60,7 +65,14 @@ def backfill_prices(conn,ticker):
     cur.executemany(
         """INSERT INTO prices(stock_id,date,open,high,low,close,adj_close,volume)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-            ON CONFLICT (stock_id,date) DO NOTHING;""",
+            """ + (
+                """ON CONFLICT (stock_id,date) DO UPDATE SET
+                    open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
+                    close=EXCLUDED.close, adj_close=EXCLUDED.adj_close,
+                    volume=EXCLUDED.volume;"""
+                if overwrite else
+                "ON CONFLICT (stock_id,date) DO NOTHING;"
+            ),
             rows_to_insert
     )
     

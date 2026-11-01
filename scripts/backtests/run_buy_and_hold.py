@@ -1,4 +1,4 @@
-from app.data.loaders import load_prices
+from app.data.loaders import load_prices, load_metadata
 from app.strategies.buy_and_hold import BuyAndHoldStrategy
 from app.backtesting.backtest_engine import BacktestEngine
 from app.visualization.plots import (plot_equity_curve,plot_drawdown)
@@ -19,6 +19,10 @@ prices = load_prices(
     end_date="2024-01-01"
 )
 
+# FIX: metadata was never loaded, and BacktestEngine's `metadata_df` argument
+# is required (no default) — this call used to crash with a missing-argument error.
+metadata = load_metadata(tickers=tickers)
+
 #LOAD UNIVERSE
 universe = UserUniverse(tickers)
 
@@ -30,6 +34,7 @@ strategy = BuyAndHoldStrategy(universe=universe, weighting=weighting)
 engine = BacktestEngine(
     strategy=strategy,
     prices_df=prices,
+    metadata_df=metadata,  # FIX: was missing — this is a required argument
     initial_capital=1_000_000,
     transaction_cost=0.0001
 )

@@ -88,3 +88,47 @@ def load_metadata(
     df.set_index("ticker", inplace=True)
 
     return df
+
+
+def load_all_tickers() -> list[str]:
+
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT ticker
+        FROM stocks
+        ORDER BY ticker;
+    """)
+
+    tickers = [row[0] for row in cur.fetchall()]
+
+    cur.close()
+
+    return tickers
+
+def load_membership() -> pd.DataFrame:
+    """Index membership history: ticker, added_date, removed_date (NULL = still a member)."""
+
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT s.ticker, m.added_date, m.removed_date
+        FROM index_membership m JOIN stocks s ON s.stock_id = m.stock_id
+        ORDER BY s.ticker, m.added_date;
+    """)
+
+    df = pd.DataFrame(
+        cur.fetchall(),
+        columns=["ticker", "added_date", "removed_date"]
+    )
+
+    cur.close()
+
+    return df
+
+if __name__ == "__main__":
+
+    tickers = load_all_tickers()
+
+    print(f"Total tickers: {len(tickers)}")
+    print(tickers[:20])

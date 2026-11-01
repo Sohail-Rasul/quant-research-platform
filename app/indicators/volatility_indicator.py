@@ -26,8 +26,18 @@ class VolatilityIndicator(BaseIndicator):
         #daily returns
         daily_returns = historical_data.pct_change()
 
+        # Require a complete lookback window
+        valid_observations = daily_returns.count()
+        
         #annualized volatility
-        volatility = daily_returns.std(ddof=1) * np.sqrt(252) #ddof => delta degrees of freedom. ddof = 1 means we are using a sample of the stocks return distribution rather than the entire thing.
+        # ddof => delta degrees of freedom. ddof = 1 means we are using a sample of the stocks return distribution rather than the entire thing.
+        volatility = (
+            daily_returns.std(ddof=1) * np.sqrt(252)
+        )
+
+        volatility[valid_observations < self.lookback_days] = np.nan
+
+        
 
         return volatility
 

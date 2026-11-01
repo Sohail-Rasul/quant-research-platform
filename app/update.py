@@ -1,5 +1,7 @@
 import yfinance as yf
 
+from app.backfill import backfill_prices
+
 def update_prices(conn,ticker):
     stock = yf.Ticker(ticker)
 
@@ -25,6 +27,17 @@ def update_prices(conn,ticker):
         print("No backdata exists, run backfill_prices first!")
         return False
     last_date = result[0]
+
+    # FIX: a split/dividend after last_date makes yfinance re-scale ALL older
+    # adj_close values, but this function only appends new rows, which would
+    # leave a fake price jump where old and new data meet. If any corporate
+    # action happened since our last stored date, re-download the full history
+    # and overwrite instead of appending.
+    actions = stock.actions
+    if actions is not None and not actions.empty and (actions.index.date > last_date).any():
+        cur.close()
+        return backfill_prices(conn, ticker, overwrite=True)
+
     history = stock.history(start=last_date,auto_adjust = False)
 
     #Create tuple for each row
